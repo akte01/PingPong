@@ -50,6 +50,7 @@ __published:	// IDE-managed Components
         void __fastcall Pauza1Click(TObject *Sender);
         void __fastcall Zakoczgr1Click(TObject *Sender);
         void __fastcall Wskazwki1Click(TObject *Sender);
+        void __fastcall Tabelawynikw1Click(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
         __fastcall TForm1(TComponent* Owner);

@@ -6,10 +6,12 @@
 #include "Markup.h"
 #include <vector>
 #include <string.h>
+#include <algorithm>
 
 #include "Unit1.h"
 #include "Unit2.h"
 #include "Unit3.h"
+#include "Unit4.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -23,12 +25,95 @@ int bounceNumber = 0;
 int turn = 1;
 AnsiString nameToSave = "";
 AnsiString scoresToSave = "";
-
-void saveScoresList(AnsiString nameToSave, AnsiString scoresToSave)
+//---------------------------------------------------------------------------
+class Player
 {
- ;
+  public:
+  std:: string name;
+  std:: string scores;
+  Player(std:: string name, std:: string scores);
+};
+//---------------------------------------------------------------------------
+Player::Player(std::string name, std::string scores)
+{
+    this -> name = name;
+    this -> scores = scores;
 }
 
+std:: vector <Player> players;
+//---------------------------------------------------------------------------
+void importScoresList(std:: vector <Player> &players)
+{
+    std:: string name;
+    std:: string scores;
+    CMarkup xml;
+    xml.Load("scores.xml");
+    xml.ResetPos();
+    while ( xml.FindElem("Player") )
+    {
+        xml.IntoElem();
+        xml.FindElem( "Name" );
+        name = xml.GetData();
+        xml.FindElem( "Scores" );
+        scores = xml.GetData();
+        players.push_back(Player(name, scores));
+        xml.OutOfElem();
+     }
+}
+//---------------------------------------------------------------------------
+void sortScoresList(std:: vector <Player> &players, std::vector <Player> &sortedPlayers)
+{
+  int maxScorePosition;
+  std::vector <int> scores;
+  for (int i = 0; i < players.size(); i++)
+    {
+        scores.push_back(atoi(players[i].scores.c_str()));
+    }
+
+  while (scores.size() > 0)
+    {
+        maxScorePosition = std::max_element(scores.begin(), scores.end()) - scores.begin();
+        sortedPlayers.push_back(Player(players[maxScorePosition].name, players[maxScorePosition].scores));
+        scores.erase(scores.begin() + maxScorePosition);
+        players.erase(players.begin() + maxScorePosition);
+    }
+}
+//---------------------------------------------------------------------------
+void saveScoresList(AnsiString nameToSave, AnsiString scoresToSave)
+{
+    CMarkup xml;
+    xml.Load("scores.xml");
+    xml.AddElem("Player");
+    xml.IntoElem();
+    xml.AddElem("Name", nameToSave.c_str());
+    xml.AddElem("Scores", scoresToSave.c_str());
+    xml.OutOfElem();
+    xml.Save("scores.xml");
+}
+//---------------------------------------------------------------------------
+void showScores()
+{
+   std::vector <Player> sortedPlayers;
+   importScoresList(players);
+   sortScoresList(players, sortedPlayers);
+   AnsiString name1 = sortedPlayers[0].name.c_str();
+   AnsiString score1 = sortedPlayers[0].scores.c_str();
+   AnsiString name2 = sortedPlayers[1].name.c_str();
+   AnsiString score2 = sortedPlayers[1].scores.c_str();
+   AnsiString name3 = sortedPlayers[2].name.c_str();
+   AnsiString score3 = sortedPlayers[2].scores.c_str();
+   AnsiString name4 = sortedPlayers[3].name.c_str();
+   AnsiString score4 = sortedPlayers[3].scores.c_str();
+   AnsiString name5 = sortedPlayers[4].name.c_str();
+   AnsiString score5 = sortedPlayers[4].scores.c_str();
+   Form4 ->Label1->Caption = "LISTA NAJLEPSZYCH WYNIKÓW";
+   Form4 ->Label2->Caption = "1. " + name1 + "................................" + score1;
+   Form4 ->Label3->Caption = "2. " + name2 + "................................" + score2;
+   Form4 ->Label4->Caption = "3. " + name3 + "................................" + score3;
+   Form4 ->Label5->Caption = "4. " + name4 + "................................" + score4;
+   Form4 ->Label6->Caption = "5. " + name5 + "................................" + score5;
+}
+//---------------------------------------------------------------------------
 void endGame (int rightScores, int leftScores)
 {
   sndPlaySound("snd/applause.wav",SND_ASYNC);
@@ -54,6 +139,9 @@ void endGame (int rightScores, int leftScores)
     Form1 -> Label1 -> Visible = true;
   }
   saveScoresList(nameToSave, scoresToSave);
+  showScores();
+  Form4 -> Visible = true;
+
 }
 //---------------------------------------------------------------------------
 __fastcall TForm1::TForm1(TComponent* Owner)
@@ -152,7 +240,7 @@ void __fastcall TForm1::ball_TimerTimer(TObject *Sender)
          && x < 0)
       {
         x = -x;
-        y = 0.9*y;
+        y = 0.9*y + 0.5;
         sndPlaySound("snd/S27.wav",SND_ASYNC);
       }
        else if (x < 0)
@@ -178,7 +266,7 @@ void __fastcall TForm1::ball_TimerTimer(TObject *Sender)
        && x > 0)
        {
          x = -x;
-         y = 1.1*y;
+         y = 1.1*y + 0.5;
          sndPlaySound("snd/S27.wav",SND_ASYNC);
        }
        else if (x > 0)
@@ -323,5 +411,11 @@ void __fastcall TForm1::Wskazwki1Click(TObject *Sender)
 }
 //---------------------------------------------------------------------------
 
+void __fastcall TForm1::Tabelawynikw1Click(TObject *Sender)
+{
+   showScores();
+   Form4 -> Visible = true;
+}
+//---------------------------------------------------------------------------
 
 
